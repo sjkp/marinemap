@@ -1,0 +1,10 @@
+{
+  "name": "visual",
+  "dependencies": {
+    "@types/jquery": "^2.0.34",
+    "jquery": "^3.1.1"
+  },
+  "devDependencies": {
+    "@types/jquery": "^2.0.34"
+  }
+}

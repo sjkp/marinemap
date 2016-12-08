@@ -1,0 +1,183 @@
+{
+    "dataRoles": [
+        {
+            "name": "Category",
+            "kind": "Grouping",
+            "displayName": "Category"
+        },
+        {
+            "name": "Time",
+            "kind": "Grouping",
+            "displayName": "Time"
+        },
+        {
+            "name": "Values",
+            "kind": "Measure",
+            "displayName": "Values"
+        },
+        {
+            "name": "Latitude",
+            "kind": "Measure",
+            "displayName": "Latitude"
+        },
+        {
+            "name": "Longitude",
+            "kind": "Measure",
+            "displayName": "Longitude"
+        },
+        {
+            "name": "Heading",
+            "kind": "Measure",
+            "displayName": "Heading"
+        },
+        {
+            "name": "Link",
+            "kind": "Measure",
+            "displayName": "Link"
+        },
+        {
+            "name": "Status",
+            "kind": "Measure",
+            "displayName": "Status"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "Category": {
+                        "max": 1
+                    },
+                    "Time": {
+                        "max": 1
+                    },
+                    "Latitude": {
+                        "max": 1
+                    },
+                    "Longitude": {
+                        "max": 1
+                    },
+                    "Heading": {
+                        "max": 1
+                    },
+                    "Values": {
+                        "max": 5
+                    },
+                    "Link": {
+                        "max": 1
+                    },
+                    "Status": {
+                        "max": 1
+                    }
+                }
+            ],
+            "categorical": {
+                "categories": {
+                    "for": {
+                        "in": "Category"
+                    },
+                    "dataReductionAlgorithm": {
+                        "bottom": {
+                            "count": 500
+                        }
+                    }
+                },
+                "values": {
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "Time"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Values"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Latitude"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Longitude"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Heading"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Link"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Status"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "objects": {
+        "general": {
+            "displayName": "General",
+            "properties": {               
+                "fill": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    },
+                    "displayName": "Fill"
+                },
+                "size": {
+                    "type": {
+                        "numeric": true
+                    },
+                    "displayName": "Size"
+                }
+            }
+        },
+        "settings": {
+            "displayName": "Settings",
+            "properties": {
+                "zoomOnClick": {
+                    "displayName": "Zoom on click",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "baseUri": {
+                    "displayName": "Server Url",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "useLiveData": {
+                    "displayName": "Use Live Data",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "links": {
+                    "displayName": "Links",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "colorTrails": {
+                                "displayName": "Color tails with status color",
+                                "type": { "bool": true}
+                            }
+            }
+        }
+    }
+}
