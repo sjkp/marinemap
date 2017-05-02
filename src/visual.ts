@@ -101,7 +101,7 @@ module powerbi.extensibility.visual {
                     var date = new Date(lastDataPoint.values[column.colIndex]);
                     // var dateFormat = valueFormatter.create({format: "dd/MM/yyyy HH:mm:ss", value: date});
                     // footerHtml += dateFormat.format(date);
-                    footerHtml += " " + (new Date()).toISOString();
+                    footerHtml += " " + date.toISOString();
                 }
                 if (column.type == MarineMapColumnType.link) {
                     link = lastDataPoint.values[column.colIndex];
@@ -134,7 +134,7 @@ module powerbi.extensibility.visual {
 
 
    export class OpenlayerMap {
-            constructor(elementId: string, private baseUrl: string, private useSignalR: boolean, private zoomOnClickLevel : number, private colorTrails = false) {
+            constructor(elementId: string, private baseUrl: string, private useSignalR: boolean, private zoomOnClickLevel : number, private colorTrails, private tailLength) {
                 this.drawmap(elementId);            
             }
     
@@ -168,7 +168,7 @@ module powerbi.extensibility.visual {
             };
             
             private getLineStyle(color: MarineMapStatus)
-            {
+            {                
                 var l = {
                     strokeColor: this.lineStyle.strokeColor,
                     strokeOpacity: this.lineStyle.strokeOpacity,
@@ -277,17 +277,17 @@ module powerbi.extensibility.visual {
                     var data : MarineMapCategoryData = marker.shipdata;
                     var status : number = data.rows[data.rows.length-1].values[statusColumn.colIndex];
                         
-                    if (status == MarineMapStatus.Red)
+                    if (status === MarineMapStatus.Red)
                     {
                         marker.setUrl(this.baseUrl + '/resources/redpointer.png');
                         return;
                     }
-                    if (status == MarineMapStatus.Yellow)
+                    if (status === MarineMapStatus.Yellow)
                     {
                         marker.setUrl(this.baseUrl + '/resources/yellowpointer.png');
                         return;
                     }
-                    if (status == MarineMapStatus.Green) 
+                    if (status === MarineMapStatus.Green) 
                     {                        
                         marker.setUrl(this.baseUrl + '/resources/greenpointer.png');
                         return;
@@ -331,6 +331,7 @@ module powerbi.extensibility.visual {
                 var longIndex = -1;
                 var headingIndex = -1;
                 var statusIndex = -1;
+                
                 $.each(model.columns, (i, column) => {
                     if (column.type == MarineMapColumnType.latitude) {
                         latIndex = column.colIndex;
@@ -358,17 +359,18 @@ module powerbi.extensibility.visual {
                             return true;
                         }
                         return false;
-                    }).slice(-10);
+                    }).slice(-this.tailLength);
                     var locations = dataFiltered.map((data, i) => {
                         return this.NewLatLong(data.values[latIndex], data.values[longIndex]);
                     });
                     
                     
                     var points = [];
-                    var pointSegments = [];
+                    var pointSegments = []; //Array of array of points. Each array are going to be drawn as a lineString with open layers. 
                     //Handle date line crossing and convert to NewGeoPoint
                      dataFiltered.forEach((data, index) => {                        
                         var status = -1;
+                        
                         if (this.colorTrails && statusIndex > -1 && index > 0)
                         {
                             status = data.values[statusIndex];
@@ -426,9 +428,9 @@ module powerbi.extensibility.visual {
                     marker.columns = model.columns;                
     
                     this.setMarkerUrl(marker);
-                    this.rotateMarker(marker, ship.rows[ship.rows.length - 1].values[headingIndex]);
-                                
+                    this.rotateMarker(marker, ship.rows[ship.rows.length - 1].values[headingIndex]);                    
                     this.plotTrail(ship.id, pointSegments);
+                    
                     if (model.data.length == 1)
                     {
                         this.map.setCenter(marker.lonlat, this.zoomOnClickLevel);
@@ -657,7 +659,8 @@ module powerbi.extensibility.visual {
         private baseUri: string = Visual.defaultBaseUri;
         private useLiveData: boolean = false;
         private zoomOnClickLevel: number = 0;
-        private colorTrails: boolean = false;
+        private colorTrails: boolean = true;
+        private tailLength: number = 10;
         // private colors: IDataColorPalette;
         private dataView: DataView;
         private maxValue = 1;
@@ -674,6 +677,7 @@ module powerbi.extensibility.visual {
                 return;
             console.log('converter', dataView);
             var table = dataView.table;
+            console.log("rows: ", table.rows.length);
             // debug.assertValue(table, 'table');
             // debug.assertValue(table.rows, 'table.rows');
 
@@ -738,6 +742,11 @@ module powerbi.extensibility.visual {
                     values: table.rows[i]
                 };
                 var category = table.rows[i][catagoryIndex];
+                if (category == null)
+                {
+                    console.log("category was null at index ", catagoryIndex);
+                    continue;
+                }
                 var categoryModel: MarineMapCategoryData = null;
                 for (var j: number = 0; j < model.data.length; j++) {
                     if (model.data[j].id == category) {
@@ -781,15 +790,16 @@ module powerbi.extensibility.visual {
             {
                 console.log('update');
                 //Handle resizing of the visual.                    
-                this.onResizing(viewport);
+                
 
                 this.redrawCanvas();
             }
+            this.onResizing(viewport);
         }
 
         public redrawCanvas = () => {
             //this.updateCanvasSize();
-
+            console.log("colorTails", this.colorTrails);
             var data = Visual.converter(this.dataView);
             if (this.openlayerMap != null) {
                 this.openlayerMap.plotdata(data);
@@ -805,20 +815,28 @@ module powerbi.extensibility.visual {
                     redrawNeeded = true;
                 }
                 var newColorTrails = this.getColorTrails();
-                    if (newColorTrails != this.colorTrails)
-                    {
-                        this.colorTrails = newColorTrails;
-                        redrawNeeded = true;
-                    }
+                console.log('new color tails', newColorTrails);
+                if (newColorTrails != this.colorTrails) {
+                    this.colorTrails = newColorTrails;
+                    redrawNeeded = true;
+                }
                 var newZoomOnClick = this.getZoomOnClick();
                 if (newZoomOnClick != this.zoomOnClickLevel) {
                     this.zoomOnClickLevel = newZoomOnClick;
                     redrawNeeded = true;
                 }
+                var newTailLength = this.getTailLength();
+                if (newTailLength != this.tailLength && typeof newTailLength === 'number' && newTailLength > 0 )
+                {
+                    this.tailLength = newTailLength;
+                    redrawNeeded = true;
+                }
                 if (redrawNeeded) {
                     console.log('redraw needed');
                     this.openlayerMap.destroy();
-                    this.openlayerMap = new OpenlayerMap(this.mapId, this.baseUri, this.useLiveData, this.zoomOnClickLevel, this.colorTrails);
+                    this.openlayerMap = new OpenlayerMap(this.mapId, this.baseUri, this.useLiveData, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
+                    this.onResizing(this.currentViewport);
+                    this.openlayerMap.plotdata(data);
                 }
             }
 
@@ -829,11 +847,15 @@ module powerbi.extensibility.visual {
         }
 
         private getUseLiveData(): boolean {
-            return Visual.getFieldBoolean(this.dataView, 'settings', 'useLiveData', this.useLiveData);
+            return Visual.getFieldBoolean(this.dataView, 'settings', 'useLiveData',false);
         }
 
         private getColorTrails(): boolean {
-            return Visual.getFieldBoolean(this.dataView, 'settings', 'colorTrails', this.colorTrails);
+            return Visual.getFieldBoolean(this.dataView, 'settings', 'colorTrails', true);
+        }
+
+        private getTailLength(): number {
+            return Visual.getFieldNumber(this.dataView, 'settings', 'tailLength', 10);
         }
 
         private getZoomOnClick(): number {
@@ -853,7 +875,7 @@ module powerbi.extensibility.visual {
                 this.currentViewport = viewport;
                 console.log('resize');
                 var map = $('#' + this.mapId);
-                map.height(this.currentViewport.height);
+                map.height( this.currentViewport.height);
                 map.width(this.currentViewport.width);
                 this.openlayerMap.resize();
             }
@@ -875,6 +897,7 @@ module powerbi.extensibility.visual {
                             links: Visual.getFieldText(dataView, 'settings', 'links', ''),
                             colorTrails: Visual.getFieldBoolean(dataView, 'settings', 'colorTrails', false),
                             zoomOnClick: Visual.getFieldNumber(dataView, 'settings', 'zoomOnClick', 0),
+                            tailLength: Visual.getFieldNumber(dataView, 'settings', 'tailLength', 10),
                             // radius: HeatMapChart.getFieldNumber(dataView, 'general', 'radius',5),
                             // blur: HeatMapChart.getFieldNumber(dataView, 'general', 'blur',15),
                             // maxWidth: HeatMapChart.getFieldNumber(dataView, 'general', 'maxWidth', this.canvasWidth),
@@ -927,10 +950,10 @@ module powerbi.extensibility.visual {
                     cache: true
                 }).done(() => {
 
-                    var omap = new OpenlayerMap(this.mapId, this.baseUri, this.useLiveData, this.zoomOnClickLevel, this.colorTrails);
+                    var omap = new OpenlayerMap(this.mapId, this.baseUri, this.useLiveData, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
                     this.openlayerMap = omap;
                     console.log('load complete', this.mapId);
-                    this.redrawCanvas();
+                    this.redrawCanvas();                   
                 });
             });
 
@@ -974,10 +997,8 @@ module powerbi.extensibility.visual {
                 var objects = dataView.metadata.objects;
                 if (objects) {
                     var f = objects[field];
-                    if (f) {
-                        var num = <number>f[property];
-                        if (num)
-                            return num;
+                    if (f !== undefined) {
+                        return <number>f[property];                        
                     }
                 }
             }
@@ -989,10 +1010,10 @@ module powerbi.extensibility.visual {
                 var objects = dataView.metadata.objects;
                 if (objects) {
                     var f = objects[field];
-                    if (f) {
-                        var bool = <boolean>f[property];
-                        if (bool)
-                            return bool;
+                    if (f !== undefined) {
+                        
+                            return <boolean>f[property];
+                        
                     }
                 }
             }

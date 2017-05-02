@@ -42,7 +42,7 @@
         }
     ],
     "dataViewMappings": [
-        {
+        {            
             "conditions": [
                 {
                     "Category": {
@@ -78,10 +78,10 @@
                     },
                     "dataReductionAlgorithm": {
                         "bottom": {
-                            "count": 500
+                            "count": 30000
                         }
                     }
-                },
+                },                
                 "values": {
                     "select": [
                         {
@@ -174,9 +174,17 @@
                     }
                 },
                 "colorTrails": {
-                                "displayName": "Color tails with status color",
-                                "type": { "bool": true}
-                            }
+                    "displayName": "Color tails with status color",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "tailLength": {
+                    "displayName": "Length of tail",
+                    "type": {
+                        "numeric": true
+                    }
+                }
             }
         }
     }
