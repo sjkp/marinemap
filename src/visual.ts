@@ -101,7 +101,10 @@ module powerbi.extensibility.visual {
                     var date = new Date(lastDataPoint.values[column.colIndex]);
                     // var dateFormat = valueFormatter.create({format: "dd/MM/yyyy HH:mm:ss", value: date});
                     // footerHtml += dateFormat.format(date);
-                    footerHtml += " " + date.toISOString();
+                    footerHtml += " " + this.formatDate(date);
+                }
+                if (column.type == MarineMapColumnType.status) {
+                    footerHtml += '<span class="popup-footer-status">status: ' + lastDataPoint.values[column.colIndex] + '</span>';
                 }
                 if (column.type == MarineMapColumnType.link) {
                     link = lastDataPoint.values[column.colIndex];
@@ -113,6 +116,20 @@ module powerbi.extensibility.visual {
                 html += this.buildMoreInfo(link);
             html += this.buildFooter(footerHtml);
             return html;
+        }
+
+        private formatDate(date : Date) : string
+        {
+             return date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear() +  " "+  this.prependZero(date.getHours()) + ":" + this.prependZero(date.getMinutes())
+        }
+
+        private prependZero(n : number)
+        {
+            if (n.toString().length === 1)
+            {
+                return "0"+n;
+            }
+            return n.toString();
         }
 
         private buildHeader(title: string) {
@@ -369,18 +386,20 @@ module powerbi.extensibility.visual {
                     var pointSegments = []; //Array of array of points. Each array are going to be drawn as a lineString with open layers. 
                     //Handle date line crossing and convert to NewGeoPoint
                      dataFiltered.forEach((data, index) => {                        
-                        var status = -1;
-                        
-                        if (this.colorTrails && statusIndex > -1 && index > 0)
+                        var status = -1;                      
+
+                        if (this.colorTrails && statusIndex > -1)
                         {
                             status = data.values[statusIndex];
-                            var prevStatus = dataFiltered[index-1].values[statusIndex];
-                            if (index > 0 && status != prevStatus)
-                            {
-                                //Status color has changed, close the use of the old color by adding a extra point.
-                                points.push(this.NewGeoPointWithStatus(data.values[latIndex], data.values[longIndex], prevStatus));
-                                pointSegments.push(points);
-                                points = [];
+                            if (index > 0) {
+                                var prevStatus = dataFiltered[index-1].values[statusIndex];
+                                if (status != prevStatus)
+                                {
+                                    //Status color has changed, close the use of the old color by adding a extra point.
+                                    points.push(this.NewGeoPointWithStatus(data.values[latIndex], data.values[longIndex], prevStatus));
+                                    pointSegments.push(points);
+                                    points = [];
+                                }
                             }
                         } 
                         
@@ -446,20 +465,17 @@ module powerbi.extensibility.visual {
                 this.removeUnselectedShips(model);
             }
             
-            private removeUnselectedShips(model : MarineMapDataModel)
-            {
+            private removeUnselectedShips(model: MarineMapDataModel) {
                 //remove ships no longer in input data
-            for (var shipId in this.ships) {
+                for (var shipId in this.ships) {
                     if (this.ships.hasOwnProperty(shipId)) {
-                        var found = false; 
-                        $.each(model.data, function(i, ship) {                    
-                            if (shipId == ship.id)
-                            {
+                        var found = false;
+                        $.each(model.data, function (i, ship) {
+                            if (shipId == ship.id) {
                                 found = true;
                             }
                         });
-                        if (found == false)
-                        {
+                        if (found == false) {
                             var marker = this.ships[shipId];
                             this.markerLayer.removeMarker(marker);
                             this.ships[shipId].polylines.forEach(feature => {
@@ -572,12 +588,12 @@ module powerbi.extensibility.visual {
                
                 this.markerLayer = new OpenLayers.Layer.Markers("Markers",{
                         displayOutsideMaxExtent: true,
-                        wrapDateLine: true,
+                        wrapDateLine: false,
                         renderers: ['Canvas', 'VML']
                     });
                 this.vectorLayer = new OpenLayers.Layer.Vector("Trails",{
                         displayOutsideMaxExtent: true,
-                        wrapDateLine: true,
+                        wrapDateLine: false,
                         renderers: ['Canvas', 'VML']
                     });
     
