@@ -2,9 +2,11 @@
   "name": "visual",
   "dependencies": {
     "@types/jquery": "^2.0.34",
-    "jquery": "^3.1.1"
+    "jquery": "^3.1.1",
+    "leaflet": "^1.0.3"
   },
   "devDependencies": {
-    "@types/jquery": "^2.0.34"
+    "@types/jquery": "^2.0.34",
+    "@types/leaflet": "^1.0.63"
   }
 }

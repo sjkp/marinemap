@@ -11,6 +11,8 @@
     ".api/v1.3.0/PowerBI-visuals.d.ts",
     "node_modules/@types/jquery/index.d.ts",
     "node_modules/jquery/dist/jquery.js",
+    "src/rotatemarker.js",
+    "src/leafletmap.ts",    
     "src/visual.ts"
   ]
 }

@@ -133,7 +133,7 @@ module powerbi.extensibility.visual {
         }
 
         private buildHeader(title: string) {
-            return '<div class="popup-title">' + title + '<span id="' + this.id + 'close" class="popup-close">x</span></div>';
+            return '<div class="popup-title">' + title +'</div>';
         }
 
         private buildRow(label: string, value: any) {
@@ -149,8 +149,19 @@ module powerbi.extensibility.visual {
         }
     }
 
+    export interface IMap
+    {
+        destroy() : void;
+        resize(): void;
+        plotdata(data : MarineMapDataModel );
+    }
 
-   export class OpenlayerMap {
+    
+
+
+
+
+   export class OpenlayerMap implements IMap  {
             constructor(elementId: string, private baseUrl: string, private useSignalR: boolean, private zoomOnClickLevel : number, private colorTrails, private tailLength) {
                 this.drawmap(elementId);            
             }
@@ -670,7 +681,7 @@ module powerbi.extensibility.visual {
         private element: HTMLElement;
         private map: JQuery;
         private mapId: string;
-        private openlayerMap: OpenlayerMap;
+        private openlayerMap: IMap;
         private static defaultBaseUri = 'https://jlvesselmon.azurewebsites.net/';
         private baseUri: string = Visual.defaultBaseUri;
         private useLiveData: boolean = false;
@@ -947,30 +958,42 @@ module powerbi.extensibility.visual {
         private initialize = (container: HTMLElement): void => {            
             console.log('initialize');
             this.mapId = "openlayermap" + Math.random().toString(36).substr(2, 9);
-            this.map = $('<div style="position: absolute;" class="marinemap-openlayer" id="' + this.mapId + '"></div>');
+            this.map = $('<div style="position: absolute;" class="marinemap-openlayer" id="' + this.mapId + '">hallo</div>');
 
             this.map.width(this.currentViewport.width);
             this.map.height(this.currentViewport.height);
             $(container).append(this.map);
+            // $.ajax({
+            //     type: "GET",
+            //     url: "https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js",
+            //     dataType: "script",
+            //     cache: true
+            // }).done(() => {
+            //     console.log('openlayers loaded');
+            //     $.ajax({
+            //         type: "GET",
+            //         url: "https://www.openstreetmap.org/openlayers/OpenStreetMap.js",
+            //         dataType: "script",
+            //         cache: true
+            //     }).done(() => {
+
+            //         var omap = new OpenlayerMap(this.mapId, this.baseUri, this.useLiveData, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
+            //         this.openlayerMap = omap;
+            //         console.log('load complete', this.mapId);
+            //         this.redrawCanvas();                   
+            //     });
+            // });
+
+           //this.openlayerMap = new LeafletMap(this.mapId);
+          
             $.ajax({
                 type: "GET",
-                url: "https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js",
+                url: "https://unpkg.com/leaflet@1.0.3/dist/leaflet.js",
                 dataType: "script",
                 cache: true
             }).done(() => {
-                console.log('openlayers loaded');
-                $.ajax({
-                    type: "GET",
-                    url: "https://www.openstreetmap.org/openlayers/OpenStreetMap.js",
-                    dataType: "script",
-                    cache: true
-                }).done(() => {
-
-                    var omap = new OpenlayerMap(this.mapId, this.baseUri, this.useLiveData, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
-                    this.openlayerMap = omap;
-                    console.log('load complete', this.mapId);
-                    this.redrawCanvas();                   
-                });
+                initRotateMarkerPlugin();
+                this.openlayerMap = new LeafletMap(this.mapId, this.baseUri, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
             });
 
         }
