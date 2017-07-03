@@ -1,12 +1,20 @@
     .olImageLoadError {
             display: none !important;
         }
-        .olPopupContent {
+        .ol-overlay-container {
             font: 13px/20px Arial, sans-serif;       
             color: white;     
-            background: linear-gradient(to bottom, #172542, #121e35);
+            background: linear-gradient(to bottom, #172542, #121e35);			
+
+			> #tooltip {
+					min-width: 200px;
+					min-height: 150px;
+			}
         }
-        .olPopupContent .popup-title {
+
+
+
+        .ol-overlay-container .popup-title {
             text-align: center;
             font-weight: bold;
         }
@@ -29,30 +37,30 @@
             margin-right: 10px;
         }
 
-        .olPopupContent .popup-footer {
+        .ol-overlay-container .popup-footer {
             background: linear-gradient(to bottom, #ff0000, #cd0000);
             position: absolute;
             bottom: 0;
             width: 100%;
-            margin-left: -5px;
             padding: 2px;
+			box-sizing: border-box;
             color:white;
             font-size: 10px;
         }
-            .olPopupContent ul {
+            .ol-overlay-container ul {
                 background-color: white;
                 color: black;
                 display: table;
                 padding: 0;
                 width: 100%;
             }
-            .olPopupContent ul > li {
+            .ol-overlay-container ul > li {
                 display:table-row;
             }
-            .olPopupContent ul > li:nth-child(odd) {
+            .ol-overlay-container ul > li:nth-child(odd) {
                 background: #f0f0f0
             }
-            .olPopupContent ul > li > span 
+            .ol-overlay-container ul > li > span 
             {
                 display:table-cell;
             }
@@ -60,10 +68,10 @@
                 background: linear-gradient(to bottom, #172542, #121e35);
             }
 
-            .olPopupContent a,
-            .olPopupContent a:hover,
-            .olPopupContent a:visited,
-            .olPopupContent a:active
+            .ol-overlay-container a,
+            .ol-overlay-container a:hover,
+            .ol-overlay-container a:visited,
+            .ol-overlay-container a:active
             {
                 color: white;
             }

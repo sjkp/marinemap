@@ -13,6 +13,7 @@
     "node_modules/jquery/dist/jquery.js",
     "src/rotatemarker.js",
     "src/leafletmap.ts",    
+    "src/openlayers3map.ts",
     "src/visual.ts"
   ]
 }

@@ -84,12 +84,13 @@ module powerbi.extensibility.visual {
     }
 
     export class PopupBuilder {
-        constructor(private id: string, private columnInfos: MarineMapColumnInfo[], private data: MarineMapCategoryData) {
+        constructor(private columnInfos: MarineMapColumnInfo[], private data: MarineMapSinglePointData) {
         }
 
         public buildHtml(): string {
             var html = this.buildHeader(this.data.id);
-            var lastDataPoint = this.data.rows[this.data.rows.length - 1];
+            var lastDataPoint = this.data.data;
+            console.log(lastDataPoint);
             html += '<ul>';
             var footerHtml = "";
             var link = this.data.link;
@@ -258,7 +259,7 @@ module powerbi.extensibility.visual {
                     {
                         self.map.setCenter(marker.lonlat, self.zoomOnClickLevel);
                     }
-                    var html = new PopupBuilder(feature.id, marker.columns, marker.shipdata).buildHtml();
+                    var html = new PopupBuilder(marker.columns, marker.shipdata).buildHtml();
 
                     if (feature.popup == null) {
                         feature.data.popupContentHTML = html;
@@ -958,11 +959,13 @@ module powerbi.extensibility.visual {
         private initialize = (container: HTMLElement): void => {            
             console.log('initialize');
             this.mapId = "openlayermap" + Math.random().toString(36).substr(2, 9);
-            this.map = $('<div style="position: absolute;" class="marinemap-openlayer" id="' + this.mapId + '">hallo</div>');
+            this.map = $('<div style="position: absolute;" class="marinemap-openlayer" id="' + this.mapId + '"></div>');
 
             this.map.width(this.currentViewport.width);
             this.map.height(this.currentViewport.height);
+
             $(container).append(this.map);
+            $(container).append($('<div id="tooltip" class="tooltip"></div>'));
             // $.ajax({
             //     type: "GET",
             //     url: "https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js",
@@ -986,16 +989,24 @@ module powerbi.extensibility.visual {
 
            //this.openlayerMap = new LeafletMap(this.mapId);
           
-            $.ajax({
+            // $.ajax({
+            //     type: "GET",
+            //     url: "https://unpkg.com/leaflet@1.0.3/dist/leaflet.js",
+            //     dataType: "script",
+            //     cache: true
+            // }).done(() => {
+            //     initRotateMarkerPlugin();
+            //     this.openlayerMap = new LeafletMap(this.mapId, this.baseUri, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
+            // });
+
+             $.ajax({
                 type: "GET",
-                url: "https://unpkg.com/leaflet@1.0.3/dist/leaflet.js",
+                url: "https://openlayers.org/en/v4.2.0/build/ol.js",
                 dataType: "script",
                 cache: true
             }).done(() => {
-                initRotateMarkerPlugin();
-                this.openlayerMap = new LeafletMap(this.mapId, this.baseUri, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
+                this.openlayerMap = new OpenLayer3Map.OpenLayers3Map(this.mapId, this.baseUri, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
             });
-
         }
 
         private static getLink = (dataView: DataView, id: PrimitiveValue): string => {

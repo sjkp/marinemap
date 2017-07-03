@@ -7,6 +7,7 @@
   },
   "devDependencies": {
     "@types/jquery": "^2.0.34",
-    "@types/leaflet": "^1.0.63"
+    "@types/leaflet": "^1.0.63",
+    "@types/openlayers": "^4.1.1"
   }
 }
