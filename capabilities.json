@@ -154,19 +154,7 @@
                     "type": {
                         "numeric": true
                     }
-                },
-                "baseUri": {
-                    "displayName": "Server Url",
-                    "type": {
-                        "text": true
-                    }
-                },
-                "useLiveData": {
-                    "displayName": "Use Live Data",
-                    "type": {
-                        "bool": true
-                    }
-                },
+                },               
                 "links": {
                     "displayName": "Links",
                     "type": {
@@ -184,7 +172,61 @@
                     "type": {
                         "numeric": true
                     }
-                }
+                },
+                "greenIndicator":{
+                    "displayName": "Good color (3)",
+                    "type":{
+                        "fill": {
+                            "solid": {
+                                "color":true
+                            }
+                        }                        
+                    }
+                },
+                "yellowIndicator":{
+                    "displayName": "Medium color (2)",
+                    "type":{
+                        "fill": {
+                            "solid": {
+                                "color":true
+                            }
+                        }                        
+                    }
+                },
+                "redIndicator":{
+                    "displayName": "Bad color (1)",
+                    "type":{
+                        "fill": {
+                            "solid": {
+                                "color":true
+                            }
+                        }                        
+                    }
+                },
+                "grayIndicator":{
+                    "displayName": "Unknown color",
+                    "type":{
+                        "fill": {
+                            "solid": {
+                                "color":true
+                            }
+                        }                        
+                    }
+                },
+                "map": {
+                    "displayName": "Map",
+                    "type": {
+                        "enumeration": [
+                           {"displayName": "transport","value": "0"},
+                           {
+                               "displayName": "openstreetmap", "value": "1"
+                           },
+                           {
+                               "displayName": "cycle", "value": "2"
+                           }
+                        ]
+                    }
+                }                
             }
         }
     }

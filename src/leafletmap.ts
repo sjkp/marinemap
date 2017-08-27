@@ -141,6 +141,11 @@ try {
 
         } 
 
+        public setVisibleLayer(name: string)
+        {
+
+        }
+
         
 
         public plotdata(model: MarineMapDataModel) {
