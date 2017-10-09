@@ -370,6 +370,7 @@ module powerbi.extensibility.visual {
                     image: new ol.style.Icon({
                     anchor: [0.5, 0.5],
                     size: [21, 25],
+                    imgSize :[21, 24],
                     offset: [0, 0],
                     opacity: 1,
                     scale: 1,
