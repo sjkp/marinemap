@@ -302,7 +302,7 @@ module powerbi.extensibility.visual {
                     });
                     pointSegments.push(points);
 
-                    var marker = null;
+                    var marker : ol.Feature = null;
                     if (typeof (this.shipMarkers[ship.id]) == 'undefined') {
                         marker = this.addMarker(locations[locations.length - 1], ship.id, ship.rows[ship.rows.length - 1].values[headingIndex]);
                         this.shipMarkers[ship.id] = marker;
@@ -313,17 +313,19 @@ module powerbi.extensibility.visual {
                     }
 
                     var status = <number>ship.rows[ship.rows.length - 1].values[statusIndex];
-                    marker.shipdata = new MarineMapSinglePointData(ship.id, ship.rows[ship.rows.length - 1], (statusIndex > -1 ? status : MarineMapStatus.Default), ship.link);
+                    (<any>marker).shipdata = new MarineMapSinglePointData(ship.id, ship.rows[ship.rows.length - 1], (statusIndex > -1 ? status : MarineMapStatus.Default), ship.link);
 
                     this.setMarkerUrl(marker, ship.rows[ship.rows.length - 1].values[headingIndex]);
 
                     this.plotTrail(ship.id, pointSegments);
 
-                    if (model.data.length == 1) {
-                        //    this.map.setCenter(marker.lonlat, this.zoomOnClickLevel);
+                    if (model.data.length == 1) {                        
+                        this.view.setCenter((<ol.geom.Point>marker.getGeometry()).getCoordinates());
+                        this.view.setZoom(this.zoomOnClickLevel);
                     }
                     else {
-                        //    this.jumpTo(this.lon, this.lat, this.zoom);
+                        this.view.setCenter(ol.proj.fromLonLat([0, 0]));
+                        this.view.setZoom(1);
                     }
                 });
 
