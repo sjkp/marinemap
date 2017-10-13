@@ -26,8 +26,8 @@
  */
 
 module powerbi.extensibility.visual {
-    
-declare var initLayerSwitcher;
+
+    declare var initLayerSwitcher;
     export interface MarineMapCategoryData {
         id: string;
         rows: MarineMapDataRow[];
@@ -70,17 +70,20 @@ declare var initLayerSwitcher;
     }
 
     export class PopupBuilder {
-        constructor(private columnInfos: MarineMapColumnInfo[], private data: MarineMapSinglePointData) {
+        constructor(private columnInfos: MarineMapColumnInfo[], private data: MarineMapSinglePointData, private tailcolors: TailColors) {
         }
 
         public buildHtml(): string {
+
             var html = this.buildHeader(this.data.id);
             var lastDataPoint = this.data.data;
             console.log(lastDataPoint);
             html += '<ul>';
             var footerHtml = "";
+            var statuscolor = this.tailcolors.gray;//Default color
             var link = this.data.link;
             $.each(this.columnInfos, (i, column) => {
+
                 if (column.type == MarineMapColumnType.data) {
                     html += this.buildRow(column.displayName, lastDataPoint.values[column.colIndex]);
                 }
@@ -91,6 +94,14 @@ declare var initLayerSwitcher;
                     footerHtml += " " + this.formatDate(date);
                 }
                 if (column.type == MarineMapColumnType.status) {
+                    var statusCode = lastDataPoint.values[column.colIndex];
+                    if (statusCode == MarineMapStatus.Green) {
+                        statuscolor = this.tailcolors.green;
+                    } else if (statusCode == MarineMapStatus.Yellow) {
+                        statuscolor = this.tailcolors.yellow
+                    } else if (statusCode == MarineMapStatus.Red) {
+                        statuscolor = this.tailcolors.red;
+                    }//else remain default color
                     footerHtml += '<span class="popup-footer-status">status: ' + lastDataPoint.values[column.colIndex] + '</span>';
                 }
                 if (column.type == MarineMapColumnType.link) {
@@ -101,34 +112,31 @@ declare var initLayerSwitcher;
             html += '</ul>';
             if (link != null && link != "")
                 html += this.buildMoreInfo(link);
-            html += this.buildFooter(footerHtml);
+            html += this.buildFooter(footerHtml, statuscolor);
             return html;
         }
 
-        private formatDate(date : Date) : string
-        {
-             return date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear() +  " "+  this.prependZero(date.getHours()) + ":" + this.prependZero(date.getMinutes())
+        private formatDate(date: Date): string {
+            return date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear() + " " + this.prependZero(date.getHours()) + ":" + this.prependZero(date.getMinutes())
         }
 
-        private prependZero(n : number)
-        {
-            if (n.toString().length === 1)
-            {
-                return "0"+n;
+        private prependZero(n: number) {
+            if (n.toString().length === 1) {
+                return "0" + n;
             }
             return n.toString();
         }
 
         private buildHeader(title: string) {
-            return '<div class="popup-title">' + title +'</div>';
+            return '<div class="popup-title">' + title + '</div>';
         }
 
         private buildRow(label: string, value: any) {
             return '<li><span>' + label + '</span><span>' + value + '</span ></li>';
         }
 
-        private buildFooter(value: string) {
-            return '<div class="popup-footer">' + value + '</div>'
+        private buildFooter(value: string, color: string) {
+            return '<div class="popup-footer" style="background-color:' + color + '">' + value + '</div>'
         }
 
         private buildMoreInfo(link: string) {
@@ -136,15 +144,14 @@ declare var initLayerSwitcher;
         }
     }
 
-    export interface IMap
-    {
-        destroy() : void;
+    export interface IMap {
+        destroy(): void;
         resize(): void;
-        plotdata(data : MarineMapDataModel );
+        plotdata(data: MarineMapDataModel);
         setVisibleLayer(name: string);
     }
 
-    
+
 
     export class TailColors {
         constructor(public green: string = '#00ff00', public yellow: string = '#ffff00', public red: string = '#ff0000', public gray: string = '#808080') {
@@ -183,17 +190,16 @@ declare var initLayerSwitcher;
             };
         }
 
-        public equals(e : TailColors) : boolean
-        {
-            return this.getGray().solid.color === e.getGray().solid.color && 
-                    this.getGreen().solid.color === e.getGreen().solid.color && 
-                    this.getRed().solid.color === e.getRed().solid.color && 
-                    this.getYellow().solid.color === e.getYellow().solid.color;
+        public equals(e: TailColors): boolean {
+            return this.getGray().solid.color === e.getGray().solid.color &&
+                this.getGreen().solid.color === e.getGreen().solid.color &&
+                this.getRed().solid.color === e.getRed().solid.color &&
+                this.getYellow().solid.color === e.getYellow().solid.color;
         }
     }
 
 
-  
+
 
     export class Visual implements IVisual {
 
@@ -220,7 +226,7 @@ declare var initLayerSwitcher;
             this.init(options);
 
 
-           this.colors = new TailColors();
+            this.colors = new TailColors();
         }
 
         // Convert a DataView into a view model
@@ -294,8 +300,7 @@ declare var initLayerSwitcher;
                     values: table.rows[i]
                 };
                 var category = table.rows[i][catagoryIndex];
-                if (category == null)
-                {
+                if (category == null) {
                     console.log("category was null at index ", catagoryIndex);
                     continue;
                 }
@@ -307,7 +312,7 @@ declare var initLayerSwitcher;
                     }
                 }
                 if (categoryModel == null) {
-                    console.log(category);
+                    // console.log(category);
                     categoryModel = { rows: [], id: category.toString(), link: Visual.getLink(dataView, category) };
                     model.data.push(categoryModel);
                 }
@@ -324,7 +329,7 @@ declare var initLayerSwitcher;
             //this.legend = powerbi.visuals.createLegend(options.element, options.interactivity && options.interactivity.isInteractiveLegend, null);
             this.hostServices = options.host;
 
-            this.currentViewport = {width: 300, height: 300};
+            this.currentViewport = { width: 300, height: 300 };
 
             this.initialize(this.element);
         }
@@ -336,14 +341,14 @@ declare var initLayerSwitcher;
             if (this.currentViewport == null) {
                 this.currentViewport = options.viewport;
             }
-            
+
             this.dataView = options.dataViews[0];
             var viewport = options.viewport;
             if (this.openlayerMap != null) //Don't try to draw map until load is complete.
             {
                 console.log('update');
                 //Handle resizing of the visual.                    
-                
+
 
                 this.redrawCanvas();
             }
@@ -357,7 +362,7 @@ declare var initLayerSwitcher;
             if (this.openlayerMap != null) {
                 this.openlayerMap.plotdata(data);
                 var redrawNeeded = false;
-               
+
                 var newUseLiveData = this.getUseLiveData();
                 if (newUseLiveData != this.useLiveData) {
                     this.useLiveData = newUseLiveData;
@@ -375,22 +380,20 @@ declare var initLayerSwitcher;
                     redrawNeeded = true;
                 }
                 var newTailLength = this.getTailLength();
-                if (newTailLength != this.tailLength && typeof newTailLength === 'number' && newTailLength > 0 )
-                {
+                if (newTailLength != this.tailLength && typeof newTailLength === 'number' && newTailLength > 0) {
                     this.tailLength = newTailLength;
                     redrawNeeded = true;
                 }
 
                 var newColor = this.getColor();
-                if (!newColor.equals(this.colors) )
-                {
+                if (!newColor.equals(this.colors)) {
                     this.colors = newColor;
                     redrawNeeded = true;
                     debugger;
                 }
 
-                
-                
+
+
                 if (redrawNeeded) {
                     console.log('redraw needed');
                     this.openlayerMap.destroy();
@@ -406,7 +409,7 @@ declare var initLayerSwitcher;
         }
 
         private getUseLiveData(): boolean {
-            return Visual.getFieldBoolean(this.dataView, 'settings', 'useLiveData',false);
+            return Visual.getFieldBoolean(this.dataView, 'settings', 'useLiveData', false);
         }
 
         private getColorTrails(): boolean {
@@ -425,13 +428,13 @@ declare var initLayerSwitcher;
             return Visual.getFieldText(this.dataView, 'settings', 'map', '0');
         }
 
-        private getColor() : TailColors {
-             
+        private getColor(): TailColors {
+
             return new TailColors(
-                Visual.getObjectValue<Fill>(this.dataView, 'settings','greenIndicator', this.colors.getGreen()).solid.color,
-                Visual.getObjectValue<Fill>(this.dataView, 'settings','yellowIndicator', this.colors.getYellow()).solid.color,
-                Visual.getObjectValue<Fill>(this.dataView, 'settings','redIndicator', this.colors.getRed()).solid.color,
-                Visual.getObjectValue<Fill>(this.dataView, 'settings','grayIndicator', this.colors.getGray()).solid.color
+                Visual.getObjectValue<Fill>(this.dataView, 'settings', 'greenIndicator', this.colors.getGreen()).solid.color,
+                Visual.getObjectValue<Fill>(this.dataView, 'settings', 'yellowIndicator', this.colors.getYellow()).solid.color,
+                Visual.getObjectValue<Fill>(this.dataView, 'settings', 'redIndicator', this.colors.getRed()).solid.color,
+                Visual.getObjectValue<Fill>(this.dataView, 'settings', 'grayIndicator', this.colors.getGray()).solid.color
             );
         }
 
@@ -448,7 +451,7 @@ declare var initLayerSwitcher;
                 this.currentViewport = viewport;
                 console.log('resize');
                 var map = $('#' + this.mapId);
-                map.height( this.currentViewport.height);
+                map.height(this.currentViewport.height);
                 map.width(this.currentViewport.width);
                 this.openlayerMap.resize();
             }
@@ -464,7 +467,7 @@ declare var initLayerSwitcher;
                         objectName: 'settings',
                         displayName: 'Settings',
                         selector: null,
-                        properties: {                            
+                        properties: {
                             useLiveData: Visual.getFieldBoolean(dataView, 'settings', 'useLiveData', false),
                             links: Visual.getFieldText(dataView, 'settings', 'links', ''),
                             colorTrails: Visual.getFieldBoolean(dataView, 'settings', 'colorTrails', false),
@@ -474,7 +477,7 @@ declare var initLayerSwitcher;
                             yellowIndicator: Visual.getObjectValue(dataView, 'settings', 'yellowIndicator', this.colors.getYellow()),
                             redIndicator: Visual.getObjectValue(dataView, 'settings', 'redIndicator', this.colors.getRed()),
                             grayIndicator: Visual.getObjectValue(dataView, 'settings', 'grayIndicator', this.colors.getGray()),
-                            map: Visual.getObjectValue(dataView, 'settings', 'map', '0')                           
+                            map: Visual.getObjectValue(dataView, 'settings', 'map', '0')
                         }
                     };
                     instances.push(settings);
@@ -500,7 +503,7 @@ declare var initLayerSwitcher;
             return mapViewport;
         }
 
-        private initialize = (container: HTMLElement): void => {            
+        private initialize = (container: HTMLElement): void => {
             console.log('initialize');
             this.mapId = "openlayermap" + Math.random().toString(36).substr(2, 9);
             this.map = $('<div style="position: absolute;" class="marinemap-openlayer" id="' + this.mapId + '"></div>');
@@ -508,8 +511,8 @@ declare var initLayerSwitcher;
             this.map.width(this.currentViewport.width);
             this.map.height(this.currentViewport.height);
 
-            $(container).append(this.map);   
-            
+            $(container).append(this.map);
+
             // $.ajax({
             //     type: "GET",
             //     url: "https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js",
@@ -531,8 +534,8 @@ declare var initLayerSwitcher;
             //     });
             // });
 
-           //this.openlayerMap = new LeafletMap(this.mapId);
-          
+            //this.openlayerMap = new LeafletMap(this.mapId);
+
             // $.ajax({
             //     type: "GET",
             //     url: "https://unpkg.com/leaflet@1.0.3/dist/leaflet.js",
@@ -543,14 +546,14 @@ declare var initLayerSwitcher;
             //     this.openlayerMap = new LeafletMap(this.mapId, this.baseUri, this.zoomOnClickLevel, this.colorTrails, this.tailLength);
             // });
 
-             $.ajax({
+            $.ajax({
                 type: "GET",
                 url: "https://openlayers.org/en/v4.2.0/build/ol.js",
                 dataType: "script",
                 cache: true
             }).done(() => {
                 initLayerSwitcher();
-                this.openlayerMap = new OpenLayer3Map.OpenLayers3Map(this.mapId, this.zoomOnClickLevel, this.colorTrails, this.tailLength,this.colors);
+                this.openlayerMap = new OpenLayer3Map.OpenLayers3Map(this.mapId, this.zoomOnClickLevel, this.colorTrails, this.tailLength, this.colors);
                 this.redrawCanvas();
             });
         }
@@ -594,7 +597,7 @@ declare var initLayerSwitcher;
                 if (objects) {
                     var f = objects[field];
                     if (f !== undefined) {
-                        return <number>f[property];                        
+                        return <number>f[property];
                     }
                 }
             }
@@ -607,9 +610,9 @@ declare var initLayerSwitcher;
                 if (objects) {
                     var f = objects[field];
                     if (f !== undefined) {
-                        
-                            return <boolean>f[property];
-                        
+
+                        return <boolean>f[property];
+
                     }
                 }
             }
@@ -617,9 +620,9 @@ declare var initLayerSwitcher;
         }
 
         private static getObjectValue<T>(dataview: DataView, objectName: string, propertyName: string, defaultValue: T): T {
-            
+
             if (dataview) {
-                let  objects = dataview.metadata.objects;
+                let objects = dataview.metadata.objects;
                 if (objects) {
                     let object = objects[objectName];
                     if (object) {
