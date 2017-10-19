@@ -167,6 +167,12 @@
                         "bool": true
                     }
                 },
+                "centeringMap": {
+                    "displayName": "Centering map by clicking the ship",
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "tailLength": {
                     "displayName": "Length of tail",
                     "type": {
