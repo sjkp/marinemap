@@ -46,7 +46,9 @@ module powerbi.extensibility.visual {
         link,
         time,
         category,
-        status
+        status,
+        future,
+        harbour,
     }
 
     export interface MarineMapColumnInfo {
@@ -215,6 +217,7 @@ module powerbi.extensibility.visual {
         private zoomOnClickLevel: number = 1;
         private colorTrails: boolean = true;
         private centeringMap: boolean = false;
+        private showFuture:boolean=false;
         private tailLength: number = 10;
         // private colors: IDataColorPalette;
         private dataView: DataView;
@@ -288,7 +291,12 @@ module powerbi.extensibility.visual {
                     if (column.roles["Status"] === true) {
                         columnInfo.type = MarineMapColumnType.status;
                     }
-
+                    if (column.roles["Future"] === true) {
+                        columnInfo.type = MarineMapColumnType.future;
+                    }
+                    if (column.roles["Harbour"] === true) {
+                        columnInfo.type = MarineMapColumnType.harbour;
+                    }
 
                     model.columns.push(columnInfo);
                 }
@@ -380,6 +388,11 @@ module powerbi.extensibility.visual {
                     this.centeringMap = newCentringMap;
                     redrawNeeded = false;
                 }
+                var newShowFuture = this.getShowFuture();
+                if (newShowFuture != this.showFuture) {
+                    this.showFuture = newShowFuture;
+                    redrawNeeded = true;
+                }
                 var newZoomOnClick = this.getZoomOnClick();
                 if (newZoomOnClick != this.zoomOnClickLevel) {
                     this.zoomOnClickLevel = newZoomOnClick;
@@ -403,7 +416,7 @@ module powerbi.extensibility.visual {
                 if (redrawNeeded) {
                     console.log('redraw needed');
                     this.openlayerMap.destroy();
-                    this.openlayerMap = new OpenLayer3Map.OpenLayers3Map(this.mapId, this.zoomOnClickLevel, this.centeringMap, this.colorTrails, this.tailLength, this.colors);
+                    this.openlayerMap = new OpenLayer3Map.OpenLayers3Map(this.mapId, this.zoomOnClickLevel, this.showFuture, this.centeringMap, this.colorTrails, this.tailLength, this.colors);
                     this.onResizing(this.currentViewport);
                     this.openlayerMap.plotdata(data);
                 }
@@ -423,6 +436,9 @@ module powerbi.extensibility.visual {
         }
         private getCentringMap(): boolean {
             return Visual.getFieldBoolean(this.dataView, 'settings', 'centeringMap', false);
+        }
+        private getShowFuture(): boolean {
+            return Visual.getFieldBoolean(this.dataView, 'settings', 'showFuture', false);
         }
 
         private getTailLength(): number {
@@ -480,7 +496,8 @@ module powerbi.extensibility.visual {
                             useLiveData: Visual.getFieldBoolean(dataView, 'settings', 'useLiveData', false),
                             links: Visual.getFieldText(dataView, 'settings', 'links', ''),
                             colorTrails: Visual.getFieldBoolean(dataView, 'settings', 'colorTrails', false),
-                            centeringMap: Visual.getFieldBoolean(dataView, 'settings', 'centeringMap', false),
+                            centeringMap: Visual.getFieldBoolean(dataView, 'settings', 'centeringMap', false),                            
+                            showFuture: Visual.getFieldBoolean(dataView, 'settings', 'showFuture', false),
                             zoomOnClick: Visual.getFieldNumber(dataView, 'settings', 'zoomOnClick', 1),
                             tailLength: Visual.getFieldNumber(dataView, 'settings', 'tailLength', 10),
                             greenIndicator: Visual.getObjectValue(dataView, 'settings', 'greenIndicator', this.colors.getGreen()),
@@ -563,7 +580,7 @@ module powerbi.extensibility.visual {
                 cache: true
             }).done(() => {
                 initLayerSwitcher();
-                this.openlayerMap = new OpenLayer3Map.OpenLayers3Map(this.mapId, this.zoomOnClickLevel, this.centeringMap, this.colorTrails, this.tailLength, this.colors);
+                this.openlayerMap = new OpenLayer3Map.OpenLayers3Map(this.mapId, this.zoomOnClickLevel, this.showFuture,this.centeringMap, this.colorTrails, this.tailLength, this.colors);
                 this.redrawCanvas();
             });
         }
