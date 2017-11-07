@@ -14,7 +14,7 @@ module powerbi.extensibility.visual {
     declare var OpenLayers: any;
 
     export class OpenlayerMap implements IMap {
-        constructor(elementId: string, private baseUrl: string, private useSignalR: boolean, private zoomOnClickLevel: number, private centeringMap, private colorTrails, private tailLength) {
+        constructor(elementId: string, private baseUrl: string, private useSignalR: boolean, private zoomOnClickLevel: number,private showFuture, private centeringMap, private colorTrails, private tailLength) {
             this.drawmap(elementId);
         }
 

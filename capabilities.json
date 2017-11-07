@@ -39,7 +39,18 @@
             "name": "Status",
             "kind": "Measure",
             "displayName": "Status"
+        },
+        {
+            "name": "Future",
+            "kind": "Grouping",
+            "displayName": "Future"
+        },
+        {
+            "name": "Harbour",
+            "kind": "Grouping",
+            "displayName": "Harbour"
         }
+
     ],
     "dataViewMappings": [
         {            
@@ -68,6 +79,12 @@
                     },
                     "Status": {
                         "max": 1
+                    },
+                    "Future": {
+                        "max": 1 
+                    },
+                    "Harbour": {
+                            "max": 1
                     }
                 }
             ],
@@ -117,6 +134,16 @@
                         {
                             "bind": {
                                 "to": "Status"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Future"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Harbour"
                             }
                         }
                     ]
@@ -169,6 +196,12 @@
                 },
                 "centeringMap": {
                     "displayName": "Centering map by clicking the ship",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showFuture": {
+                    "displayName": "Show planned rute in the future when one ship is chosen",
                     "type": {
                         "bool": true
                     }
