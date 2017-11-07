@@ -14,7 +14,7 @@ module powerbi.extensibility.visual {
     declare var OpenLayers: any;
 
     export class OpenlayerMap implements IMap {
-        constructor(elementId: string, private baseUrl: string, private useSignalR: boolean, private zoomOnClickLevel: number, private colorTrails, private tailLength) {
+        constructor(elementId: string, private baseUrl: string, private useSignalR: boolean, private zoomOnClickLevel: number, private centeringMap, private colorTrails, private tailLength) {
             this.drawmap(elementId);
         }
 
@@ -71,7 +71,9 @@ module powerbi.extensibility.visual {
         private jumpTo(lon, lat, zoom) {
             //var x = Lon2Merc(lon);
             //var y = Lat2Merc(lat);
-            this.map.setCenter(this.NewLatLong(lat, lon), zoom);
+            if (this.centeringMap) {
+                this.map.setCenter(this.NewLatLong(lat, lon), zoom);
+            }
             return false;
         }
 
@@ -103,7 +105,7 @@ module powerbi.extensibility.visual {
             var markerClick = function (evt) {
                 var feature = this.feature;
                 var marker = this;
-                if (self.zoomOnClickLevel > 0) {
+                if (self.zoomOnClickLevel > 0 && self.centeringMap) {
                     self.map.setCenter(marker.lonlat, self.zoomOnClickLevel);
                 }
                 var html = new PopupBuilder(marker.columns, marker.shipdata).buildHtml();
@@ -297,7 +299,7 @@ module powerbi.extensibility.visual {
                 this.rotateMarker(marker, ship.rows[ship.rows.length - 1].values[headingIndex]);
                 this.plotTrail(ship.id, pointSegments);
 
-                if (model.data.length == 1) {
+                if (model.data.length == 1 && this.centeringMap) {
                     this.map.setCenter(marker.lonlat, this.zoomOnClickLevel);
                 }
                 else {
